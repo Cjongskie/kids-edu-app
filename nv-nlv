@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Living vs Nonliving Game</title>
+<style>
+  body {
+    font-family: "Comic Sans MS", sans-serif;
+    background: linear-gradient(to right, #ffecd2, #fcb69f);
+    text-align: center;
+    margin: 0;
+    padding: 0;
+  }
+  h1 {
+    color: #2e8b57;
+    margin-top: 20px;
+  }
+  #gameArea {
+    margin: 20px auto;
+    width: 300px;
+    height: 300px;
+    border: 5px solid #2e8b57;
+    border-radius: 15px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: bold;
+    color: #333;
+  }
+  #instructions {
+    font-size: 18px;
+    margin: 15px;
+    color: #444;
+  }
+  #score, #lives {
+    font-size: 20px;
+    margin: 10px;
+    font-weight: bold;
+  }
+  #feedback {
+    font-size: 20px;
+    margin: 15px;
+    font-weight: bold;
+  }
+  #endScreen {
+    display: none;
+    margin: 20px;
+    font-size: 18px;
+    text-align: left;
+  }
+  .btn {
+    background: #ff6f61;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin: 10px;
+    font-size: 18px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .btn:hover {
+    background: #ff3b2e;
+  }
+</style>
+</head>
+<body>
+
+<h1>🌱 Living vs Nonliving Things 🌍</h1>
+<div id="instructions">
+  Swipe left if the picture is a <b>Living Thing</b>.  
+  Swipe right if it is a <b>Nonliving Thing</b>.  
+  You have <b>3 lives</b>. Earn ⭐ Star Points for correct answers.  
+</div>
+
+<div id="score">⭐ Stars: 0</div>
+<div id="lives">❤️ Lives: 3</div>
+
+<div id="gameArea">Click Start to Begin!</div>
+<div id="feedback"></div>
+
+<button class="btn" onclick="startGame()">Start Game</button>
+
+<div id="endScreen"></div>
+
+<script>
+const items = [
+  {name:"Dog", type:"Living", explanation:"Dogs are living because they breathe, eat, and grow."},
+  {name:"Car", type:"Nonliving", explanation:"Cars are nonliving; they don’t grow or reproduce."},
+  {name:"Tree", type:"Living", explanation:"Trees are living; they grow and make food."},
+  {name:"Chair", type:"Nonliving", explanation:"Chairs are nonliving; they are man-made objects."},
+  {name:"Cat", type:"Living", explanation:"Cats are living; they move and reproduce."},
+  {name:"Rock", type:"Nonliving", explanation:"Rocks are nonliving; they don’t need food or water."},
+  {name:"Bird", type:"Living", explanation:"Birds are living; they fly, eat, and grow."},
+  {name:"Book", type:"Nonliving", explanation:"Books are nonliving; they are objects made of paper."},
+  {name:"Fish", type:"Living", explanation:"Fish are living; they swim, eat, and reproduce."},
+  {name:"Ball", type:"Nonliving", explanation:"Balls are nonliving; they don’t have life processes."},
+  {name:"Flower", type:"Living", explanation:"Flowers are living; they grow and reproduce."},
+  {name:"Table", type:"Nonliving", explanation:"Tables are nonliving; they are made of wood or metal."},
+  {name:"Human", type:"Living", explanation:"Humans are living; they breathe, eat, and think."},
+  {name:"Computer", type:"Nonliving", explanation:"Computers are nonliving; they need electricity but don’t grow."},
+  {name:"Rabbit", type:"Living", explanation:"Rabbits are living; they hop, eat, and reproduce."}
+];
+
+let currentIndex = 0;
+let score = 0;
+let lives = 3;
+let results = [];
+
+function startGame() {
+  currentIndex = 0;
+  score = 0;
+  lives = 3;
+  results = [];
+  document.getElementById("score").textContent = "⭐ Stars: " + score;
+  document.getElementById("lives").textContent = "❤️ Lives: " + lives;
+  document.getElementById("endScreen").style.display = "none";
+  showItem();
+}
+
+function showItem() {
+  if (currentIndex < items.length && lives > 0) {
+    document.getElementById("gameArea").textContent = items[currentIndex].name;
+    document.getElementById("feedback").textContent = "Swipe Left = Living | Swipe Right = Nonliving";
+    document.getElementById("gameArea").onclick = () => checkAnswer("Living");
+    document.getElementById("gameArea").oncontextmenu = (e) => {
+      e.preventDefault();
+      checkAnswer("Nonliving");
+    };
+  } else {
+    endGame();
+  }
+}
+
+function checkAnswer(choice) {
+  let item = items[currentIndex];
+  if (choice === item.type) {
+    score++;
+    document.getElementById("score").textContent = "⭐ Stars: " + score;
+    let compliments = ["Good Job!", "Excellent!", "Well Done!", "Awesome!", "Great Work!"];
+    document.getElementById("feedback").textContent = compliments[Math.floor(Math.random()*compliments.length)];
+    results.push({item:item.name, correct:true, explanation:item.explanation});
+  } else {
+    lives--;
+    document.getElementById("lives").textContent = "❤️ Lives: " + lives;
+    document.getElementById("feedback").textContent = "Oops! Try again.";
+    results.push({item:item.name, correct:false, explanation:item.explanation});
+  }
+  currentIndex++;
+  setTimeout(showItem, 1000);
+}
+
+function endGame() {
+  document.getElementById("gameArea").textContent = "Game Over!";
+  document.getElementById("feedback").textContent = "";
+  let endScreen = document.getElementById("endScreen");
+  endScreen.style.display = "block";
+  endScreen.innerHTML = "<h2>Results & Explanations</h2>";
+  results.forEach(r => {
+    endScreen.innerHTML += `<p><b>${r.item}</b> - ${r.correct ? "✅ Correct" : "❌ Wrong"}<br>${r.explanation}</p>`;
+  });
+}
+</script>
+
+</body>
+</html>
