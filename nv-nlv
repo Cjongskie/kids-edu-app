@@ -1,167 +1,441 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Living vs Nonliving Game</title>
-<style>
-  body {
-    font-family: "Comic Sans MS", sans-serif;
-    background: linear-gradient(to right, #ffecd2, #fcb69f);
-    text-align: center;
-    margin: 0;
-    padding: 0;
-  }
-  h1 {
-    color: #2e8b57;
-    margin-top: 20px;
-  }
-  #gameArea {
-    margin: 20px auto;
-    width: 300px;
-    height: 300px;
-    border: 5px solid #2e8b57;
-    border-radius: 15px;
-    background: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
-    font-weight: bold;
-    color: #333;
-  }
-  #instructions {
-    font-size: 18px;
-    margin: 15px;
-    color: #444;
-  }
-  #score, #lives {
-    font-size: 20px;
-    margin: 10px;
-    font-weight: bold;
-  }
-  #feedback {
-    font-size: 20px;
-    margin: 15px;
-    font-weight: bold;
-  }
-  #endScreen {
-    display: none;
-    margin: 20px;
-    font-size: 18px;
-    text-align: left;
-  }
-  .btn {
-    background: #ff6f61;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    margin: 10px;
-    font-size: 18px;
-    border-radius: 8px;
-    cursor: pointer;
-  }
-  .btn:hover {
-    background: #ff3b2e;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Living and Nonliving Swipe Game</title>
+  <style>
+    :root {
+      --bg1: #fff176;
+      --bg2: #80deea;
+      --panel: #ffffff;
+      --ink: #1d3557;
+      --accent: #ff4d6d;
+      --good: #2e7d32;
+      --bad: #d32f2f;
+      --card: #fefefe;
+      --card-border: #5c6bc0;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Trebuchet MS", "Comic Sans MS", system-ui, sans-serif;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2));
+      color: var(--ink);
+      display: flex;
+      justify-content: center;
+      padding: 18px;
+    }
+
+    .app {
+      width: min(760px, 100%);
+      background: color-mix(in srgb, var(--panel) 90%, #ffffff 10%);
+      border: 4px solid #3949ab;
+      border-radius: 24px;
+      padding: 16px;
+      box-shadow: 0 10px 24px rgb(0 0 0 / 0.15);
+    }
+
+    h1 {
+      font-size: clamp(1.7rem, 3vw, 2.3rem);
+      margin: 6px 0 12px;
+      text-align: center;
+      color: #283593;
+    }
+
+    .screen {
+      display: none;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    .intro-box {
+      font-size: 1.15rem;
+      line-height: 1.6;
+      background: #fff9c4;
+      border: 3px dashed #f57f17;
+      border-radius: 18px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+
+    .start-btn,
+    .restart-btn {
+      border: none;
+      border-radius: 12px;
+      background: var(--accent);
+      color: white;
+      font-size: 1.2rem;
+      font-weight: 700;
+      padding: 12px 22px;
+      cursor: pointer;
+      transition: transform 0.15s ease, filter 0.15s ease;
+    }
+
+    .start-btn:hover,
+    .restart-btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.05);
+    }
+
+    .hud {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .pill {
+      background: #e8eaf6;
+      border: 2px solid #5c6bc0;
+      border-radius: 999px;
+      padding: 8px 14px;
+    }
+
+    .game-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .swipe-zone {
+      width: min(420px, 90vw);
+      height: 320px;
+      border: 4px dashed #7b1fa2;
+      border-radius: 18px;
+      background: #ede7f6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .card {
+      width: 230px;
+      height: 260px;
+      border-radius: 18px;
+      border: 4px solid var(--card-border);
+      background: var(--card);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      touch-action: pan-y;
+      position: relative;
+      transition: transform 0.22s ease;
+      box-shadow: 0 8px 20px rgb(0 0 0 / 0.18);
+      cursor: grab;
+    }
+
+    .card:active {
+      cursor: grabbing;
+    }
+
+    .emoji {
+      font-size: 7rem;
+      line-height: 1;
+    }
+
+    #feedback {
+      min-height: 40px;
+      font-size: 1.25rem;
+      font-weight: 800;
+      text-align: center;
+      margin-top: 4px;
+    }
+
+    .good {
+      color: var(--good);
+    }
+
+    .bad {
+      color: var(--bad);
+    }
+
+    .results {
+      margin-top: 16px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .result-item {
+      border-radius: 12px;
+      border: 2px solid #c5cae9;
+      background: #f8f9ff;
+      padding: 10px;
+      line-height: 1.35;
+      font-size: 1rem;
+    }
+
+    .result-item strong {
+      font-size: 1.1rem;
+    }
+
+    @media (max-width: 540px) {
+      .swipe-zone {
+        height: 280px;
+      }
+
+      .card {
+        width: 200px;
+        height: 225px;
+      }
+
+      .emoji {
+        font-size: 6rem;
+      }
+    }
+  </style>
 </head>
 <body>
+  <main class="app">
+    <h1>🌟 Living & Nonliving Swipe Adventure 🌟</h1>
 
-<h1>🌱 Living vs Nonliving Things 🌍</h1>
-<div id="instructions">
-  Swipe left if the picture is a <b>Living Thing</b>.  
-  Swipe right if it is a <b>Nonliving Thing</b>.  
-  You have <b>3 lives</b>. Earn ⭐ Star Points for correct answers.  
-</div>
+    <section id="startScreen" class="screen active" aria-live="polite">
+      <div class="intro-box">
+        <p><strong>Welcome, Grade 3 Learners!</strong></p>
+        <p>
+          You will see 15 picture cards. Swipe each card:
+          <strong>left for Living Things</strong> and
+          <strong>right for Nonliving Things</strong>.
+        </p>
+        <p>
+          You have <strong>3 lives</strong>. Every correct answer gives you
+          <strong>⭐ 1 Star Point</strong> plus a fun compliment. Try to earn as many stars as you can!
+        </p>
+      </div>
+      <div style="text-align:center;">
+        <button class="start-btn" id="startBtn">Start Game</button>
+      </div>
+    </section>
 
-<div id="score">⭐ Stars: 0</div>
-<div id="lives">❤️ Lives: 3</div>
+    <section id="gameScreen" class="screen" aria-live="polite">
+      <div class="hud">
+        <div class="pill" id="progress">Card: 1 / 15</div>
+        <div class="pill" id="stars">⭐ Stars: 0</div>
+        <div class="pill" id="lives">❤️ Lives: 3</div>
+      </div>
 
-<div id="gameArea">Click Start to Begin!</div>
-<div id="feedback"></div>
+      <div class="game-wrap">
+        <div class="swipe-zone">
+          <div id="card" class="card" role="button" aria-label="Swipe card">
+            <span id="emoji" class="emoji" aria-hidden="true"></span>
+          </div>
+        </div>
+        <div id="feedback"></div>
+      </div>
+    </section>
 
-<button class="btn" onclick="startGame()">Start Game</button>
+    <section id="endScreen" class="screen" aria-live="polite">
+      <h2 id="summaryTitle"></h2>
+      <p id="summaryLine" style="font-size:1.15rem; font-weight:700;"></p>
+      <div id="results" class="results"></div>
+      <div style="margin-top:14px; text-align:center;">
+        <button class="restart-btn" id="restartBtn">Play Again</button>
+      </div>
+    </section>
+  </main>
 
-<div id="endScreen"></div>
+  <script>
+    const items = [
+      { emoji: "🐶", name: "Dog", type: "Living", explanation: "A dog is living because it breathes, eats, grows, and has babies." },
+      { emoji: "🚲", name: "Bicycle", type: "Nonliving", explanation: "A bicycle is nonliving because it does not grow, breathe, or reproduce." },
+      { emoji: "🌳", name: "Tree", type: "Living", explanation: "A tree is living because it grows, needs water, and makes new plants through seeds." },
+      { emoji: "🪑", name: "Chair", type: "Nonliving", explanation: "A chair is nonliving because it is an object made by people." },
+      { emoji: "🐟", name: "Fish", type: "Living", explanation: "A fish is living because it eats, breathes, moves, and grows." },
+      { emoji: "⚽", name: "Ball", type: "Nonliving", explanation: "A ball is nonliving because it cannot grow or make more balls by itself." },
+      { emoji: "🐦", name: "Bird", type: "Living", explanation: "A bird is living because it needs food, breathes air, and can reproduce." },
+      { emoji: "📚", name: "Books", type: "Nonliving", explanation: "Books are nonliving because they are objects and do not have life processes." },
+      { emoji: "🌻", name: "Flower", type: "Living", explanation: "A flower is living because it grows and can make seeds." },
+      { emoji: "⌚", name: "Watch", type: "Nonliving", explanation: "A watch is nonliving because it works mechanically and does not grow or breathe." },
+      { emoji: "🐇", name: "Rabbit", type: "Living", explanation: "A rabbit is living because it moves, eats, grows, and reproduces." },
+      { emoji: "🚌", name: "Bus", type: "Nonliving", explanation: "A bus is nonliving because it needs a driver and fuel to move." },
+      { emoji: "🧒", name: "Child", type: "Living", explanation: "A child is living because humans breathe, grow, eat, and reproduce." },
+      { emoji: "🧸", name: "Teddy Bear", type: "Nonliving", explanation: "A teddy bear is nonliving because it is a toy and has no life functions." },
+      { emoji: "🐢", name: "Turtle", type: "Living", explanation: "A turtle is living because it breathes, eats, grows, and has offspring." }
+    ];
 
-<script>
-const items = [
-  {name:"Dog", type:"Living", explanation:"Dogs are living because they breathe, eat, and grow."},
-  {name:"Car", type:"Nonliving", explanation:"Cars are nonliving; they don’t grow or reproduce."},
-  {name:"Tree", type:"Living", explanation:"Trees are living; they grow and make food."},
-  {name:"Chair", type:"Nonliving", explanation:"Chairs are nonliving; they are man-made objects."},
-  {name:"Cat", type:"Living", explanation:"Cats are living; they move and reproduce."},
-  {name:"Rock", type:"Nonliving", explanation:"Rocks are nonliving; they don’t need food or water."},
-  {name:"Bird", type:"Living", explanation:"Birds are living; they fly, eat, and grow."},
-  {name:"Book", type:"Nonliving", explanation:"Books are nonliving; they are objects made of paper."},
-  {name:"Fish", type:"Living", explanation:"Fish are living; they swim, eat, and reproduce."},
-  {name:"Ball", type:"Nonliving", explanation:"Balls are nonliving; they don’t have life processes."},
-  {name:"Flower", type:"Living", explanation:"Flowers are living; they grow and reproduce."},
-  {name:"Table", type:"Nonliving", explanation:"Tables are nonliving; they are made of wood or metal."},
-  {name:"Human", type:"Living", explanation:"Humans are living; they breathe, eat, and think."},
-  {name:"Computer", type:"Nonliving", explanation:"Computers are nonliving; they need electricity but don’t grow."},
-  {name:"Rabbit", type:"Living", explanation:"Rabbits are living; they hop, eat, and reproduce."}
-];
+    const compliments = [
+      "Good job!",
+      "Excellent!",
+      "Well done!",
+      "Awesome work!",
+      "Fantastic!",
+      "Great thinking!"
+    ];
 
-let currentIndex = 0;
-let score = 0;
-let lives = 3;
-let results = [];
+    const startScreen = document.getElementById("startScreen");
+    const gameScreen = document.getElementById("gameScreen");
+    const endScreen = document.getElementById("endScreen");
 
-function startGame() {
-  currentIndex = 0;
-  score = 0;
-  lives = 3;
-  results = [];
-  document.getElementById("score").textContent = "⭐ Stars: " + score;
-  document.getElementById("lives").textContent = "❤️ Lives: " + lives;
-  document.getElementById("endScreen").style.display = "none";
-  showItem();
-}
+    const progressEl = document.getElementById("progress");
+    const starsEl = document.getElementById("stars");
+    const livesEl = document.getElementById("lives");
+    const emojiEl = document.getElementById("emoji");
+    const cardEl = document.getElementById("card");
+    const feedbackEl = document.getElementById("feedback");
 
-function showItem() {
-  if (currentIndex < items.length && lives > 0) {
-    document.getElementById("gameArea").textContent = items[currentIndex].name;
-    document.getElementById("feedback").textContent = "Swipe Left = Living | Swipe Right = Nonliving";
-    document.getElementById("gameArea").onclick = () => checkAnswer("Living");
-    document.getElementById("gameArea").oncontextmenu = (e) => {
-      e.preventDefault();
-      checkAnswer("Nonliving");
-    };
-  } else {
-    endGame();
-  }
-}
+    const summaryTitle = document.getElementById("summaryTitle");
+    const summaryLine = document.getElementById("summaryLine");
+    const resultsEl = document.getElementById("results");
 
-function checkAnswer(choice) {
-  let item = items[currentIndex];
-  if (choice === item.type) {
-    score++;
-    document.getElementById("score").textContent = "⭐ Stars: " + score;
-    let compliments = ["Good Job!", "Excellent!", "Well Done!", "Awesome!", "Great Work!"];
-    document.getElementById("feedback").textContent = compliments[Math.floor(Math.random()*compliments.length)];
-    results.push({item:item.name, correct:true, explanation:item.explanation});
-  } else {
-    lives--;
-    document.getElementById("lives").textContent = "❤️ Lives: " + lives;
-    document.getElementById("feedback").textContent = "Oops! Try again.";
-    results.push({item:item.name, correct:false, explanation:item.explanation});
-  }
-  currentIndex++;
-  setTimeout(showItem, 1000);
-}
+    let index = 0;
+    let stars = 0;
+    let lives = 3;
+    let results = [];
 
-function endGame() {
-  document.getElementById("gameArea").textContent = "Game Over!";
-  document.getElementById("feedback").textContent = "";
-  let endScreen = document.getElementById("endScreen");
-  endScreen.style.display = "block";
-  endScreen.innerHTML = "<h2>Results & Explanations</h2>";
-  results.forEach(r => {
-    endScreen.innerHTML += `<p><b>${r.item}</b> - ${r.correct ? "✅ Correct" : "❌ Wrong"}<br>${r.explanation}</p>`;
-  });
-}
-</script>
+    let startX = null;
+    const swipeThreshold = 70;
 
+    function switchScreen(show) {
+      [startScreen, gameScreen, endScreen].forEach((section) => {
+        section.classList.remove("active");
+      });
+      show.classList.add("active");
+    }
+
+    function resetGame() {
+      index = 0;
+      stars = 0;
+      lives = 3;
+      results = [];
+      updateHud();
+      feedbackEl.textContent = "";
+      feedbackEl.className = "";
+      renderCard();
+    }
+
+    function updateHud() {
+      progressEl.textContent = `Card: ${Math.min(index + 1, items.length)} / ${items.length}`;
+      starsEl.textContent = `⭐ Stars: ${stars}`;
+      livesEl.textContent = `❤️ Lives: ${lives}`;
+    }
+
+    function renderCard() {
+      if (index >= items.length || lives <= 0) {
+        endGame();
+        return;
+      }
+
+      cardEl.style.transform = "translateX(0px) rotate(0deg)";
+      emojiEl.textContent = items[index].emoji;
+      cardEl.setAttribute("aria-label", `Picture card ${index + 1}`);
+      updateHud();
+    }
+
+    function animateSwipe(direction) {
+      const x = direction === "left" ? -300 : 300;
+      const r = direction === "left" ? -14 : 14;
+      cardEl.style.transform = `translateX(${x}px) rotate(${r}deg)`;
+    }
+
+    function checkAnswer(choice) {
+      const current = items[index];
+      const correct = choice === current.type;
+
+      if (correct) {
+        stars += 1;
+        feedbackEl.textContent = compliments[Math.floor(Math.random() * compliments.length)];
+        feedbackEl.className = "good";
+      } else {
+        lives -= 1;
+        feedbackEl.textContent = "Oops! Keep trying!";
+        feedbackEl.className = "bad";
+      }
+
+      results.push({
+        emoji: current.emoji,
+        item: current.name,
+        correctType: current.type,
+        playerChoice: choice,
+        correct,
+        explanation: current.explanation
+      });
+
+      index += 1;
+      updateHud();
+      setTimeout(renderCard, 460);
+    }
+
+    function handleSwipe(direction) {
+      animateSwipe(direction);
+      const choice = direction === "left" ? "Living" : "Nonliving";
+      setTimeout(() => checkAnswer(choice), 220);
+    }
+
+    function endGame() {
+      switchScreen(endScreen);
+
+      summaryTitle.textContent = lives > 0 ? "🎉 Game Complete!" : "🛑 Out of Lives!";
+      summaryLine.textContent = `You earned ${stars} out of ${items.length} possible stars.`;
+
+      resultsEl.innerHTML = "";
+      results.forEach((result, i) => {
+        const box = document.createElement("article");
+        box.className = "result-item";
+        box.innerHTML = `
+          <strong>${i + 1}. ${result.emoji} ${result.item}</strong><br>
+          Your answer: <b>${result.playerChoice}</b> ${result.correct ? "✅" : "❌"}<br>
+          Correct answer: <b>${result.correctType}</b><br>
+          ${result.explanation}
+        `;
+        resultsEl.appendChild(box);
+      });
+    }
+
+    cardEl.addEventListener("pointerdown", (event) => {
+      startX = event.clientX;
+    });
+
+    cardEl.addEventListener("pointerup", (event) => {
+      if (startX === null) return;
+      const deltaX = event.clientX - startX;
+      startX = null;
+
+      if (deltaX <= -swipeThreshold) {
+        handleSwipe("left");
+      } else if (deltaX >= swipeThreshold) {
+        handleSwipe("right");
+      } else {
+        cardEl.style.transform = "translateX(0px)";
+      }
+    });
+
+    cardEl.addEventListener("pointercancel", () => {
+      startX = null;
+      cardEl.style.transform = "translateX(0px)";
+    });
+
+    document.getElementById("startBtn").addEventListener("click", () => {
+      resetGame();
+      switchScreen(gameScreen);
+    });
+
+    document.getElementById("restartBtn").addEventListener("click", () => {
+      resetGame();
+      switchScreen(gameScreen);
+    });
+
+    // Optional keyboard support for classroom computers.
+    document.addEventListener("keydown", (event) => {
+      if (!gameScreen.classList.contains("active")) return;
+      if (event.key === "ArrowLeft") {
+        handleSwipe("left");
+      } else if (event.key === "ArrowRight") {
+        handleSwipe("right");
+      }
+    });
+  </script>
 </body>
 </html>
